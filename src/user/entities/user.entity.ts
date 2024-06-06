@@ -21,7 +21,8 @@ export class User {
   email: string;
 
   @Column({ default: 'user' })
-  role: userRole;
+  // role: userRole;
+  role:string;
 
   @Column({
     default: () => `CURRENT_TIMESTAMP`,

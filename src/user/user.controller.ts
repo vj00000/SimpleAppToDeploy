@@ -1,25 +1,34 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Request } from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { JwtAuthGuard } from './jwt-auth.gaurd';
+import { AuthService } from './auth.service';
 
 @Controller('users')
 export class UserController {
-  constructor(private readonly userService: UserService) {}
+  constructor(private readonly userService: UserService,
+    private readonly authService: AuthService
+  ) {}
 
   @Post('register')
-  RegisterNewUser(@Body() createUserDto: CreateUserDto) {
-    return this.userService.createUser(createUserDto);
+  async RegisterNewUser(@Body() createUserDto: CreateUserDto) {
+    const user = this.userService.createUser(createUserDto);
+    return user;
   }
 
   @Post('login')
-  loginUser(@Body() createUserDto: CreateUserDto) {
-    return this.userService.loginUser(createUserDto);
+  async loginUser(@Body() {username,password}) {
+    const user = await this.authService.validateUser(username,password);
+    const token = await this.authService.login(user);
+    return { token };  
   }
 
   @Get('profile')
-  getProfile() {
-    return this.userService.userProfile();
+  @UseGuards(JwtAuthGuard)
+  async getProfile(@Request() req) {
+    const username = req.user.username;
+    return await this.userService.findOneByUsername(username);
   }
-
+  
 }

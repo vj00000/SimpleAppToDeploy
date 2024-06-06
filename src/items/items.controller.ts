@@ -1,35 +1,36 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Put } from '@nestjs/common';
-import { ItemsService } from './items.service';
+import { Controller, Post, Get, Body, Param, Put, Delete } from '@nestjs/common';
+import { ItemService } from './items.service';
+import { Item } from './entities/item.entity';
 import { CreateItemDto } from './dto/create-item.dto';
-import { UpdateItemDto } from './dto/update-item.dto';
 
 @Controller('items')
-export class ItemsController {
-  constructor(private readonly itemsService: ItemsService) {}
+export class ItemController {
+  constructor(private readonly itemService: ItemService) {}
 
   @Get()
-  findAllAuctionItemWithPagination() {
-    return this.itemsService.findAllAuctionItem();
+  async findAll(): Promise<Item[]> {
+    return await this.itemService.findAllItem();
   }
-
+ 
   @Get(':id')
-  findItemWithId(@Param('id') id: string) {
-    return this.itemsService.findItem(+id);
+  async findOne(@Param('id') id:number){ // Replace with actual return type
+    return this.itemService.findItemById(id);
   }
 
-  
+
   @Post()
-  createNewAuctionItem(@Body() createItemDto: CreateItemDto) {
-    return this.itemsService.createAuctionItem(createItemDto);
+  async createItem(@Body() createItemDto: CreateItemDto): Promise<Item> {
+          return await this.itemService.createItem(createItemDto);
   }
 
-  @Put(':id')
-  updateAuctionItem(@Param('id') id: string, @Body() updateItemDto: UpdateItemDto) {
-    return this.itemsService.updateAuctionItem(+id, updateItemDto);
+  @Put()
+  async updateItem(@Param('id') id:number, @Body() createItemDto: CreateItemDto): Promise<Item> {
+          return await this.itemService.updateItem(id,createItemDto);
   }
 
-  @Delete(':id')
-  removeAuctionItem(@Param('id') id: string) {
-    return this.itemsService.removeAuctionItem(+id);
+  @Delete()
+  async deleteItem(@Param('id') id:number)
+  {
+    return await this.itemService.deleteItemById(id);
   }
 }
