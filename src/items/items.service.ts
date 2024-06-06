@@ -1,25 +1,53 @@
 import { Injectable } from '@nestjs/common';
-import { CreateItemDto } from './dto/create-item.dto';
-import { UpdateItemDto } from './dto/update-item.dto';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { Item } from './entities/item.entity';
 
 @Injectable()
-export class ItemsService {
+export class ItemService {
+  constructor(
+    @InjectRepository(Item)
+    private readonly itemRepository: Repository<Item>,
+  ) {}
 
-  createAuctionItem(reateItemDto){
+  async createItem(createItemDto): Promise<Item> {
+    const newItem = new Item();
+    newItem.name = createItemDto.name;
+    newItem.description = createItemDto.description;
+    newItem.starting_price = createItemDto.starting_price;
+    newItem.currentPrice = createItemDto.starting_price;
+    newItem.image_url = createItemDto.image_url;
+    newItem.endTime = new Date(createItemDto.end_time);
+    return await this.itemRepository.save(newItem);
   }
 
-  findAllAuctionItem() {
-    return `This action returns all items`;
+  async findAllItem(): Promise<Item[]> {
+    return await this.itemRepository.find();
   }
 
-  findItem(id: number) {
-    return `This action returns a #${id} item`;
-  }
-  updateAuctionItem(id: number, updateItemDto: UpdateItemDto) {
-    return `This action updates a #${id} item`;
+  async findItemById(id) {
+    const itemWithId = await this.itemRepository.findOne(id);
+    if (!itemWithId) {
+      throw new Error('Item not found'); // Handle item not found error
+    }
+    return itemWithId;
   }
 
-  removeAuctionItem(id: number) {
-    return `This action removes a #${id} item`;
+  async updateItem(id, createItemDto) {
+    const itemToUpdate = await this.itemRepository.findOne(id);
+    if (!itemToUpdate) {
+      throw new Error('Item not found'); // Handle item not found error
+    }
+    itemToUpdate.name = createItemDto.name;
+    itemToUpdate.description = createItemDto.description;
+    itemToUpdate.starting_price = createItemDto.starting_price;
+    itemToUpdate.currentPrice = createItemDto.starting_price;
+    itemToUpdate.image_url = createItemDto.image_url;
+    itemToUpdate.endTime = new Date(createItemDto.end_time);
+    return await this.itemRepository.save(itemToUpdate);
+  }
+
+  async deleteItemById(id: number): Promise<void> {
+    await this.itemRepository.delete(id);
   }
 }
